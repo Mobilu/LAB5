@@ -11,19 +11,25 @@
     <script src="./src/jquery-2.1.1.min.js"></script>
     <script src="./src/jquery.mobile-1.4.5.js"></script>
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
     <!-- This script, cordova.js,  is built into Evothings Viewer (i.e. you won't need to add this file to your project) The idea is to pick up a http resource, even if you're using https, which would normally create a cross-protocol violation. The HTTP plug-in from Apache Cordova allows this to be carried out, see especially this post: https://evothings.com/evothings-secured-now-serving-over-https/ -->
     <script>
         // Redirect console.log to Evothings Workbench.
         if (window.hyper && window.hyper.log) { console.log = hyper.log }
-        </script>
-
-    <script src="./src/cordova.js"></script>
-
+    </script>
+    <script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="cordova.js"></script>
+    <script type="text/javascript" src="history.js"></script>
+    
 </head>
 
  
 
-<body class="ui-mobile-viewport ui-overlay-a"><div data-role="page" data-url="/demos/dome_pics/index.html" tabindex="0" class="ui-page ui-page-theme-a ui-page-active" style="min-height: 542px;">
+<body class="ui-mobile-viewport ui-overlay-a">
+
+    <div data-role="page" data-url="/demos/dome_pics/index.html" tabindex="0" class="ui-page ui-page-theme-a ui-page-active" style="min-height: 542px;">
+
 <script>
 
 // Create an empty sensor object as a global 
@@ -31,20 +37,23 @@ var sensor = {};
 
 // Where the sensor data is stored
 var mSensorDataURL = 'http://backup.evothings.com:8082/output/';
-
+//var mSensorDataURL = 'http://smartspaces.r1.kth.se:8082/';
 // A subscriber's key (Five other keys also availble at http://smartspaces.r1.kth.se:8082)
-sensor.key = "BQa4EqqbgxfMgpBQ8XwNhvP82Dj";
+sensor.key = "J3Wgj9qegGFX4r9KlxxGfaeMXQB";
 
 // A bitmap image describing where the sensor is located
-sensor.image = "https://evothings.com/demos/dome_pics/IMG_1758.JPG";
+//sensor.image = "https://evothings.com/demos/dome_pics/IMG_1758.JPG";
 
 
 // Function to retrieve data, placing it in a "response" object
+
+
 function getJSON() 
     {
+        document.getElementById("printHere").innerHTML= '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>';
     if (window.cordova) 
         {
-            console.log('Using Apache Cordova HTTP GET function');
+            hyper.log('Using Apache Cordova HTTP GET function');
             cordovaHTTP.get(
                 mSensorDataURL + sensor.key + '.json?gt[timestamp]=now-1day&page=1',
                 function (response) 
@@ -53,17 +62,19 @@ function getJSON()
                             {
                                 sensor.data = JSON.parse(response.data)[0];
                                 sensor.fullData = JSON.parse(response.data);
-                                printData();
+                                //printData();
+                                //printHistory();
+                                document.getElementById("printHere").innerHTML="";
                             }
                     },
                 function (error) 
                     {
-                    console.log(JSON.stringify(error));
+                    hyper.log(JSON.stringify(error));
                     });
         }    
     else 
         {
-            console.log('Not using Cordova, fallback to AJAX via jquery');
+            hyper.log('Not using Cordova, fallback to AJAX via jquery');
             $.ajax({
                     url: mSensorDataURL + sensor.key + ".json?gt[timestamp]=now- 1day",
                     jsonp: "callback",
@@ -79,7 +90,9 @@ function getJSON()
                                 {
                                     sensor.data = response[0];
                                     sensor.fullData = response;
-                                    printData();
+                                    //printData();
+                                    //printHistory();
+                                    document.getElementById("printHere").innerHTML="";
                                 }
                         }
                 });
@@ -90,13 +103,17 @@ function getJSON()
 function printData()    
     {
         if (sensor && sensor.data) 
+
             {
+                hyper.log(sensor.fullData[0])
+                hyper.log(sensor.fullData[sensor.fullData.length-1].timestamp)
+
             // Display the info.
                 html = '<h1>Sensor Data</h1>'
                  + '<br /><div id="time">Time  ' + sensor.data.timestamp + '</div>'
                  + '<div id="hum">Humidity ' + sensor.data.h + ' % (rel)</div>'
                  + '<div id="temp">Temperature ' + sensor.data.t + ' celcius</div>'
-                 + '<img src="' + sensor.image + '" />'
+                 + '<div id="temp">Empty ' + Math.round(100*sensor.data.np/1500) + ' % </div>'
             } 
     else 
             {
@@ -108,9 +125,24 @@ function printData()
     }
 
 
-</script><button onclick="history.back()" class=" ui-btn ui-shadow ui-corner-all">Exit</button><br>
+</script><button onclick="history.back()" class=" ui-btn ui-shadow ui-corner-all">Exit</button>
 
 <button onclick="getJSON();" class=" ui-btn ui-shadow ui-corner-all">Retrieve some sensor data</button>
+<table>
+    <form id="form">
+        <tr>
+            <td>
+                <input type="radio" name="gender" value="c" checked onclick="printHistory('c')"> <br>CO2 Levels</input>
+            </td>
+            <td>
+                <input type="radio" name="gender" value="l" onclick="printHistory('l')" > <br>Illuminance</input>
+            </td>
+            <td>
+                <input type="radio" name="gender" value="t" onclick="printHistory('t')"> <br>Temperature </input>
+            </td>
+        </tr> 
+    </form> 
+</table>
 <div id="printHere"></div>
 
 
