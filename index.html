@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <!-- saved from url=(0047)http://evothings.com/demos/dome_pics/index.html -->
-<html class="ui-mobile"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><!--<base href="http://evothings.com/demos/dome_pics/index.html">--><base href=".">
+<html class="ui-mobile">
+<head>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="stylesheet" href="path/to/font-awesome/css/font-awesome.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Baloo" rel="stylesheet">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><!--<base href="http://evothings.com/demos/dome_pics/index.html">--><base href=".">
 
     
     <meta name="viewport" content="width=device-width, user-scalable=no,
@@ -24,6 +29,7 @@
  
 
 <body class="ui-mobile-viewport ui-overlay-a"><div data-role="page" data-url="/demos/dome_pics/index.html" tabindex="0" class="ui-page ui-page-theme-a ui-page-active" style="min-height: 542px;">
+
 <script>
 
 // Create an empty sensor object as a global 
@@ -33,10 +39,10 @@ var sensor = {};
 var mSensorDataURL = 'http://backup.evothings.com:8082/output/';
 
 // A subscriber's key (Five other keys also availble at http://smartspaces.r1.kth.se:8082)
-sensor.key = "BQa4EqqbgxfMgpBQ8XwNhvP82Dj";
+sensor.key = "J3Wgj9qegGFX4r9KlxxGfaeMXQB";
 
 // A bitmap image describing where the sensor is located
-sensor.image = "https://evothings.com/demos/dome_pics/IMG_1758.JPG";
+//sensor.image = "https://evothings.com/demos/dome_pics/IMG_1758.JPG";
 
 
 // Function to retrieve data, placing it in a "response" object
@@ -92,17 +98,36 @@ function printData()
         if (sensor && sensor.data) 
             {
             // Display the info.
-                html = '<h1>Sensor Data</h1>'
-                 + '<br /><div id="time">Time  ' + sensor.data.timestamp + '</div>'
-                 + '<div id="hum">Humidity ' + sensor.data.h + ' % (rel)</div>'
-                 + '<div id="temp">Temperature ' + sensor.data.t + ' celcius</div>'
-                 + '<img src="' + sensor.image + '" />'
+                //html = '<div id="time">Time  ' + sensor.data.timestamp + '</div>'
+                // + '<div id="hum">Humidity ' + sensor.data.h + ' % (rel)</div>'
+                // + '<div id="temp">Temperature ' + sensor.data.t + ' celcius</div>'
+
+                if (sensor.data.np > (1500 * 0.9)) {
+                    roomstatus = "EMPTY";
+                    roomcolor = "green";
+                }
+                else if (sensor.data.np < 1500 * 0.1) {
+                    roomstatus = "CROWDED";
+                    roomcolor = "red";
+                }
+                else{
+                    roomstatus = "Not empty";
+                    roomcolor = "yellow";
+                }
+
+                html = '<div id="time">Temp:  ' + sensor.data.t + ' °C</div>'
+                + '<div id="c">CO2: ' + sensor.data.c + ' ppm</div><br/>'
+                + '<div id="pa">Pressure: ' + Math.round(sensor.data.p/10)/100  + ' kPa</div>'
+                + '<div id="l">Lumination: ' + Math.round(sensor.data.l*100)/100 + ' lux</div>'
+                + '<div id="pa">Humidity: ' + Math.round(sensor.data.h*100)/100 + ' %</div><br/>'
+                //+ '<div id="np">NP: ' + sensor.data.np + '</div>'
+                //+ '<div id="pp">PP: ' + sensor.data.pp + '</div><br/>'
+                + '<div id="availability">Availability: <font color='+roomcolor+'>' + roomstatus + '</font></div>'
             } 
     else 
             {
                 html = '<h1>Sensor Data</h1>'
                  + '<br />Sorry, sensor data not available right now :(</br>'
-                 + '<img src="' + sensor.image + '" />'
             }
     document.getElementById("printHere").innerHTML= html;
     }
@@ -110,8 +135,12 @@ function printData()
 
 </script><button onclick="history.back()" class=" ui-btn ui-shadow ui-corner-all">Exit</button><br>
 
-<button onclick="getJSON();" class=" ui-btn ui-shadow ui-corner-all">Retrieve some sensor data</button>
-<div id="printHere"></div>
+<button onclick="getJSON();" class=" ui-btn ui-shadow ui-corner-all">Collect data</button>
+
+
+<div class="container" id="block">
+    <div id="printHere"></div>
+</div>
 
 
 
