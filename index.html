@@ -55,7 +55,7 @@ function getJSON()
         {
             hyper.log('Using Apache Cordova HTTP GET function');
             cordovaHTTP.get(
-                mSensorDataURL + sensor.key + '.json?gt[timestamp]=now-1day&page=1',
+                mSensorDataURL + sensor.key + '.json?gt[timestamp]=now-5days&page=1',
                 function (response) 
                     {
                         if (response) 
@@ -76,7 +76,7 @@ function getJSON()
         {
             hyper.log('Not using Cordova, fallback to AJAX via jquery');
             $.ajax({
-                    url: mSensorDataURL + sensor.key + ".json?gt[timestamp]=now- 1day",
+                    url: mSensorDataURL + sensor.key + ".json?gt[timestamp]=now-5days",
                     jsonp: "callback",
                     cache: true,
                     dataType: "jsonp",

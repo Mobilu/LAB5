@@ -1,14 +1,22 @@
 printHistory = function (choice) {
-	var chosen = ""; var other = "";
+
+	var currentdate = new Date();
+	var day = currentdate.getDay();
+	var month = currentdate.getMonth();
+
+	var chosen = ""; var other = ""; var unit = "";
 	if (choice == "c") {
+		unit = "ppm";
 		chosen = " CO2 levels (ppm)"
 		other = "When can you breate in here? >410 ppm is bad."
 	}
 	else if (choice == "l") {
+		unit = "lux";
 		chosen = " Illuminance (Lux)";
 		other = "When is it light outside?";
 	}
 	else {
+		unit = "celsius";
 		chosen = " Temperature (Celsius)";
 		other = "When is it too hot in here?";
 	}
@@ -18,9 +26,14 @@ printHistory = function (choice) {
 	var hours_val = [[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]];
 	var hours_num = [[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0]];
 	var text2 = "";
+
+	var days_val = [[0],[0],[0],[0],[0]];
+	var days_num = [[0],[0],[0],[0],[0]];
+
 	for (i = 0; i < allData.length; i++) {
+		var dataDay = Number(allData[i].timestamp.split("T")[0].split("-")[2])
 		var hour = allData[i].timestamp.split("T")[1].split(".")[0].split(':')[0];
-    	//var value = Math.round(100*allData[i].np/1500)
+    	
     	if (choice == "c") {
     		var value = Number(allData[i].c);
     	}
@@ -30,22 +43,47 @@ printHistory = function (choice) {
     	else {
     		var value = Number(allData[i].t);
     	}
-    	//text += value + " "+ hour + "<br>";
+    	
     	hours_val[hour-1] = value + Number(hours_val[hour-1]);
     	hours_num[hour-1] = 1 + Number(hours_num[hour-1]);
-    	//hyper.log(allData[i].p)
+    	if (hour == 12) {
+    		days_val[dataDay-day+4] = value + Number(days_val[dataDay-day+4]);
+			days_num[dataDay-day+4] = 1 + Number(days_num[dataDay-day+4]);
+    	}	
+
 	}
-	//hyper.log(hours_val[1])
-	//allData = '[{"c":"436","h":"15.2784","l":"3.0854","np":"1500","p":"102528.50","pp":"0","t":"30.4","timestamp":"2017-05-02T14:23:02.092Z"},{"c":"436","h":"15.4157","l":"3.0854","np":"1500","p":"102526.75","pp":"0","t":"30.2","timestamp":"2017-05-02T14:22:30.420Z"},{"c":"436","h":"15.5988","l":"3.1033","np":"1499","p":"102538.50","pp":"0","t":"30.0","timestamp":"2017-05-02T14:21:58.756Z"},{"c":"437","h":"15.7972","l":"3.1033","np":"1499","p":"102536.00","pp":"0","t":"29.9","timestamp":"2017-05-02T14:21:27.652Z"},{"c":"440","h":"15.6522","l":"3.1122","np":"1500","p":"102542.50","pp":"0","t":"29.8","timestamp":"2017-05-02T14:20:56.589Z"}]';
-	//allData = JSON.parse(allData);
+	hyper.log(days_num)
+	hyper.log(days_val)
+
 	var usefuldata = [];
 	for (i = 0; i < 23; i++) {
 		//text +=  Number(i+1) +": "+ Math.round(hours_val[i]/hours_num[i]) +  "<br>";
 		usefuldata[i] = Math.round(hours_val[i]/hours_num[i]*10)/10;
 	}
+	var usefulfivedaydata = []; 
+	for (i=0;i<5;i++){
+		usefulfivedaydata[i] = Math.round(days_val[i]/days_num[i]*10)/10;
+	}
+	var lastdays = "<h2>Average value at 12 for last 5 days:</h2>";
+	for (var i=0;i<5;i++){
+		var today = Number(day) -Number(i);
+		var temp_unit = unit;
+		if (isNaN(usefulfivedaydata[4-i])) {
+			usefulfivedaydata[4-i] = "data not sent from server";
+			temp_unit = "";
+		}
+		else if (usefulfivedaydata[4-i] == undefined) {
+			temp_unit = "";
+			usefulfivedaydata[4-i] = "no data available yet";
+		}
+		lastdays += "<p>"+ today + "/" + month +" : " + usefulfivedaydata[4-i] + " " + temp_unit + "</p>";
+	}
 
-	document.getElementById("printHere").innerHTML= text + "<h1>"+chosen+"</h1><p>"+other+"</p><d3></d3><p> Time axis (hours)</p>";
+
+	document.getElementById("printHere").innerHTML= text + "<h1>"+chosen+"</h1><p>"+other+"</p><d3></d3><p> Time axis (hours)</p><br>" + lastdays;
 	drawd3(usefuldata);
+	hyper.log(usefulfivedaydata);
+
 }
 
 function drawd3(dataset) {
@@ -56,14 +94,8 @@ var maxi = Math.max.apply(null, dataset);
 var w = screen.width;
 var h = screen.height * 0.4;
 var padding = 40;
-			//var w = 300;
-			//var h = 400;
 			var barPadding = 1;
-
-			
-			//var dataset = [ 5, 10, 13, 19, 21, 25, 22, 18, 15, 13,
-			//				11, 12, 15, 20, 18, 17, 16, 18, 23, 25 ];
-			
+	
 	var xScale = d3.scale.linear()
 		.domain([0, w])
 		.range([padding, w - padding * 2]);
@@ -78,19 +110,16 @@ var padding = 40;
 							  .scale(timeScale)
 							  .orient("bottom")
 							  .ticks(12);
-
 			//Define Y axis
 			var yAxis = d3.svg.axis()
 							  .scale(yScale)
 							  .orient("left")
 							  .ticks(5);
-
 			//Create SVG element
 			var svg = d3.select("d3")
 						.append("svg")
 						.attr("width", w)
 						.attr("height", h);
-
 
 			svg.selectAll("rect")
 			   .data(dataset)
@@ -100,25 +129,16 @@ var padding = 40;
 			   		return xScale(i * (w / dataset.length));
 			   })
 			   .attr("y", function(d) {
-
 			   		return yScale(d);
 			   })
 			   .attr("width", ((w-2*padding) / dataset.length - barPadding))
 			   .attr("height", function(d) {
-			   	//hyper.log(yScale(((d-mini)/(maxi-mini) * h)))
 			   		return h - padding - yScale(d);
 			   })
 			   .attr("fill", function(d) {
-			   		//var color;
-			   		//if (d > 30) {color = "rgb(100,0,0)";}
-			   		//else if (d>25) {color = "rgb(100,100,0)";}
-			   		//else if (d > 20) {color = "rgb(0,100,100)";}
-			   		//else {color = "rgb(0,0,100)";}
-			   		//return color;
 			   		value = (d-mini)/(maxi-mini);
 			   		var hue=((1-value)*120).toString(10);
     				return ["hsl(",hue,",100%,50%)"].join("");
-					//return "rgb(0, 0, " + ((d-20) * 30) + ")";
 			   });
 /*
 			   svg.selectAll("text")
