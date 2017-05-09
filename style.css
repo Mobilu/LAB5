@@ -1,0 +1,10 @@
+#block {
+	background-color: Gainsboro; 
+	max-width: 80%;
+	border-radius:10px;
+	padding: 3%;
+	margin: auto;
+	margin-top: 35px;
+	min-height: 100px;
+	font-family: 'Baloo';
+}

@@ -2,7 +2,8 @@
 <!-- saved from url=(0047)http://evothings.com/demos/dome_pics/index.html -->
 <html class="ui-mobile"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><!--<base href="http://evothings.com/demos/dome_pics/index.html">--><base href=".">
 
-    
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <link href="https://fonts.googleapis.com/css?family=Baloo" rel="stylesheet">
     <meta name="viewport" content="width=device-width, user-scalable=no,
         shrink-to-fit=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0">
 
@@ -103,23 +104,38 @@ function getJSON()
 function printData()    
     {
         if (sensor && sensor.data) 
-
             {
-                hyper.log(sensor.fullData[0])
-                hyper.log(sensor.fullData[sensor.fullData.length-1].timestamp)
-
             // Display the info.
-                html = '<h1>Sensor Data</h1>'
-                 + '<br /><div id="time">Time  ' + sensor.data.timestamp + '</div>'
-                 + '<div id="hum">Humidity ' + sensor.data.h + ' % (rel)</div>'
-                 + '<div id="temp">Temperature ' + sensor.data.t + ' celcius</div>'
-                 + '<div id="temp">Empty ' + Math.round(100*sensor.data.np/1500) + ' % </div>'
+                //html = '<div id="time">Time  ' + sensor.data.timestamp + '</div>'
+                // + '<div id="hum">Humidity ' + sensor.data.h + ' % (rel)</div>'
+                // + '<div id="temp">Temperature ' + sensor.data.t + ' celcius</div>'
+
+                if (sensor.data.np > (1500 * 0.9)) {
+                    roomstatus = "EMPTY";
+                    roomcolor = "green";
+                }
+                else if (sensor.data.np < 1500 * 0.1) {
+                    roomstatus = "CROWDED";
+                    roomcolor = "red";
+                }
+                else{
+                    roomstatus = "Not empty";
+                    roomcolor = "yellow";
+                }
+
+                html = '<div id="time">Temp:  ' + sensor.data.t + ' °C</div>'
+                + '<div id="c">CO2: ' + sensor.data.c + ' ppm</div><br/>'
+                + '<div id="pa">Pressure: ' + Math.round(sensor.data.p/10)/100  + ' kPa</div>'
+                + '<div id="l">Lumination: ' + Math.round(sensor.data.l*100)/100 + ' lux</div>'
+                + '<div id="pa">Humidity: ' + Math.round(sensor.data.h*100)/100 + ' %</div><br/>'
+                //+ '<div id="np">NP: ' + sensor.data.np + '</div>'
+                //+ '<div id="pp">PP: ' + sensor.data.pp + '</div><br/>'
+                + '<div id="availability">Availability: <font color='+roomcolor+'>' + roomstatus + '</font></div>'
             } 
     else 
             {
                 html = '<h1>Sensor Data</h1>'
                  + '<br />Sorry, sensor data not available right now :(</br>'
-                 + '<img src="' + sensor.image + '" />'
             }
     document.getElementById("printHere").innerHTML= html;
     }
@@ -140,10 +156,15 @@ function printData()
             <td>
                 <input type="radio" name="gender" value="t" onclick="printHistory('t')"> <br>Temperature </input>
             </td>
+            <td>
+                <input type="radio" name="gender" value="n" onclick="printData()"> <br>Current </input>
+            </td>
         </tr> 
     </form> 
 </table>
-<div id="printHere"></div>
+<div class="container" id="block">
+    <div id="printHere"></div>
+</div>
 
 
 
