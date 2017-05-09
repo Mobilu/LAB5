@@ -1,7 +1,7 @@
 printHistory = function (choice) {
 
 	var currentdate = new Date();
-	var day = currentdate.getDay();
+	var day = currentdate.getDate();
 	var month = currentdate.getMonth();
 
 	var chosen = ""; var other = ""; var unit = "";
